@@ -1486,6 +1486,11 @@ if [ "$SLACKPKGPLUS" = "on" ];then
     local INSTPKG
     local REPO
     local PNAME
+    local PKGLOCALNAMEVERSION_VER
+    local PKGLOCALNAMEVERSION
+    local PKGLOCALTAG
+    local PKGREMOTENAMEVERSION_VER
+    local PKGREMOTENAMEVERSION
 
     {
     [ "$TERSESEARCH" == "off" ] && echo "[ Status#] [ Repository#] [ Package# ]"
@@ -1537,8 +1542,16 @@ if [ "$SLACKPKGPLUS" = "on" ];then
 
             # If installed is it uptodate?
             if [ "${REPO}" = "SBo" ] ; then
-                PKGLOCALNAMEVERSION=${CINSTPKG%-*-*}
-                PKGREMOTENAMEVERSION=${RAWNAME%-*-*}
+                PKGLOCALNAMEVERSION_VER=${CINSTPKG%-*-*}
+                PKGLOCALNAMEVERSION=${PKGLNAMEVERSION_VER%_*}
+                PKGLOCALTAG=$(expr match "${CINSTPKG}" '.*-[0-9]*_\?\(.*$\)' | tr '[:upper:]' '[:lower:]') #sbo, alien, etc
+
+                PKGREMOTENAMEVERSION_VER=${RAWNAME%-*-*}
+                PKGREMOTENAMEVERSION=${PKGRNAMEVERSION_VER%_*}
+                # PKGRTAG=$(expr match "${RAWNAME}" '.*-\(.*\)-.*$' | tr '[:upper:]' '[:lower:]') #sbo always
+
+                PKGLOCALNAMEVERSION="${PKGLOCALNAMEVERSION}-${PKGLOCALTAG}" #sbo, alien, etc
+                PKGREMOTENAMEVERSION="${PKGREMOTENAMEVERSION}-sbo" #${PKGRTAG}"
             else
                 PKGLOCALNAMEVERSION=${CINSTPKG}
                 PKGREMOTENAMEVERSION=${RAWNAME}
