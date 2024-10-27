@@ -75,6 +75,7 @@ if [ -e $CONF/slackpkgplus.conf ];then
   USETERSE=${EXTUSETERSE:-$USETERSE}
   TERSESEARCH=${EXTTERSESEARCH:-$TERSESEARCH}
   PROXY=${EXTPROXY:-$PROXY}
+  REMIND_FREQ=${REMIND_FREQ:-86400}
 
   if [ "$PROXY" == "off" ];then
     unset http_proxy
@@ -2221,11 +2222,13 @@ if [ "$SLACKPKGPLUS" = "on" ];then
   done
 
   if [ "$CMD" != "update" -a "$CMD" != "check-updates" ];then
-    if [ $[$(date +%s)-$(date -d "$(ls -l --full-time $WORKDIR/pkglist 2>/dev/null|awk '{print $6,$7,$8}')" +%s)] -gt 86400 ];then
+    let age=$(stat -c "%Z %Y" $WORKDIR/pkglist | tr -s ' ' '-')
+    if [ $age -gt $REMIND_FREQ ];then
       echo
-      echo "NOTICE: pkglist is older than 24h; you are encouraged to re-run 'slackpkg update'"
+      echo "NOTICE: seems the local package database is slightly outdated, please run 'slackpkg update' before proceeding."
       echo
     fi
+    unset age
   fi
   if [ "$CMD" == "update" ];then
     if [ $CONF/slackpkgplus.conf -nt $WORKDIR/CHECKSUMS.md5.asc ];then

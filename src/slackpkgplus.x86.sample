@@ -107,6 +107,10 @@ STRICTGPG=on
 # Set TAG_PRIORITY to 'on' to enable this function
 TAG_PRIORITY=off
 
+# This controls how freqently you will have a notice on repository was expired:
+# Default is 24 hours (86400 seconds).
+REMIND_FREQ=86400
+
 # List repositories you want to use (defined below)
 # remember to launch 'slackpkg update' if you modify this row.
 #REPOPLUS=( slackpkgplus restricted alienbob )
