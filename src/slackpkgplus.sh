@@ -1487,6 +1487,11 @@ if [ "$SLACKPKGPLUS" = "on" ];then
     local INSTPKG
     local REPO
     local PNAME
+    local PKGLOCALNAMEVERSION_VER
+    local PKGLOCALNAMEVERSION
+    local PKGLOCALTAG
+    local PKGREMOTENAMEVERSION_VER
+    local PKGREMOTENAMEVERSION
 
     {
     [ "$TERSESEARCH" == "off" ] && echo "[ Status#] [ Repository#] [ Package# ]"
@@ -1537,7 +1542,23 @@ if [ "$SLACKPKGPLUS" = "on" ];then
           if [ "${CBASENAME}" == "${BASENAME}" ] ; then
 
             # If installed is it uptodate?
-            if [ "${CINSTPKG}" = "${RAWNAME}" ]; then
+            if [ "${REPO}" = "SBo" ] ; then
+                PKGLOCALNAMEVERSION_VER=${CINSTPKG%-*-*}
+                PKGLOCALNAMEVERSION=${PKGLNAMEVERSION_VER%_*}
+                PKGLOCALTAG=$(expr match "${CINSTPKG}" '.*-[0-9]*_\?\(.*$\)' | tr '[:upper:]' '[:lower:]') #sbo, alien, etc
+
+                PKGREMOTENAMEVERSION_VER=${RAWNAME%-*-*}
+                PKGREMOTENAMEVERSION=${PKGRNAMEVERSION_VER%_*}
+                # PKGRTAG=$(expr match "${RAWNAME}" '.*-\(.*\)-.*$' | tr '[:upper:]' '[:lower:]') #sbo always
+
+                PKGLOCALNAMEVERSION="${PKGLOCALNAMEVERSION}-${PKGLOCALTAG}" #sbo, alien, etc
+                PKGREMOTENAMEVERSION="${PKGREMOTENAMEVERSION}-sbo" #${PKGRTAG}"
+            else
+                PKGLOCALNAMEVERSION=${CINSTPKG}
+                PKGREMOTENAMEVERSION=${RAWNAME}
+            fi
+
+            if [ "${PKGLOCALNAMEVERSION}" = "${PKGREMOTENAMEVERSION}" ] ; then
               if [ "$TERSESEARCH" == "off" ];then
                 echo "  installed#    $REPO#    $CINSTPKG"
               elif [ "$TERSESEARCH" == "tiny" ];then
@@ -2570,10 +2591,12 @@ if [ "$SLACKPKGPLUS" = "on" ];then
           SBORESULT="$(grep -E -i "^SBO_[^ ]* [^ ]*${PATTERN}" $WORKDIR/pkglist 2>/dev/null|awk '{print $6}')"
         fi
         if [ ! -z "$SBORESULT" ];then
+            SB=""
+            for P in $SBORESULT ; do SB="$SB SLACKPKGPLUS_SBo:$P" ; done
             echo
             echo "Also found in SBo (download it with 'slackpkg download <package>'):"
             echo
-            echo -e "[package]\n$SBORESULT"|sed -e 's/  /    /' -e 's/^/  /' -e 's/  \[/[ /g' -e 's/\]/ ]/g'|grep --color -E -i -e "${PATTERN%,*}" -e ^
+            searchlistEX "$SB"
             echo
         fi
       ;;
